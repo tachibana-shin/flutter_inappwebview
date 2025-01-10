@@ -214,14 +214,11 @@ public class MyCookieManager extends ChannelDelegateImpl {
     if (cookieManager == null) return cookieListMap;
 
     List<String> cookies = new ArrayList<>();
-    if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_COOKIE_INFO)) {
-      cookies = CookieManagerCompat.getCookieInfo(cookieManager, url);
-    } else {
+   
       String cookiesString = cookieManager.getCookie(url);
       if (cookiesString != null) {
         cookies = Arrays.asList(cookiesString.split(";"));
       }
-    }
 
     for (String cookie : cookies) {
       String[] cookieParams = cookie.split(";");
@@ -241,46 +238,6 @@ public class MyCookieManager extends ChannelDelegateImpl {
       cookieMap.put("isSecure", null);
       cookieMap.put("isHttpOnly", null);
       cookieMap.put("path", null);
-
-      if (WebViewFeature.isFeatureSupported(WebViewFeature.GET_COOKIE_INFO)) {
-        cookieMap.put("isSecure", false);
-        cookieMap.put("isHttpOnly", false);
-
-        for (int i = 1; i < cookieParams.length; i++) {
-          String[] cookieParamNameValue = cookieParams[i].split("=", 2);
-          String cookieParamName = cookieParamNameValue[0].trim();
-          String cookieParamValue = (cookieParamNameValue.length > 1) ? cookieParamNameValue[1].trim() : "";
-
-          if (cookieParamName.equalsIgnoreCase("Expires")) {
-            try {
-              final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-              Date expiryDate = sdf.parse(cookieParamValue);
-              if (expiryDate != null) {
-                cookieMap.put("expiresDate", expiryDate.getTime());
-              }
-            } catch (ParseException e) {
-              Log.e(LOG_TAG, "", e);
-            }
-          } else if (cookieParamName.equalsIgnoreCase("Max-Age")) {
-            try {
-              long maxAge = Long.parseLong(cookieParamValue);
-              cookieMap.put("expiresDate", System.currentTimeMillis() + maxAge);
-            } catch (NumberFormatException e) {
-              Log.e(LOG_TAG, "", e);
-            }
-          } else if (cookieParamName.equalsIgnoreCase("Domain")) {
-            cookieMap.put("domain", cookieParamValue);
-          } else if (cookieParamName.equalsIgnoreCase("SameSite")) {
-            cookieMap.put("sameSite", cookieParamValue);
-          } else if (cookieParamName.equalsIgnoreCase("Secure")) {
-            cookieMap.put("isSecure", true);
-          } else if (cookieParamName.equalsIgnoreCase("HttpOnly")) {
-            cookieMap.put("isHttpOnly", true);
-          } else if (cookieParamName.equalsIgnoreCase("Path")) {
-            cookieMap.put("path", cookieParamValue);
-          }
-        }
-      }
 
       cookieListMap.add(cookieMap);
     }
